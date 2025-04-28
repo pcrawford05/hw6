@@ -53,6 +53,8 @@ void printBoard(const std::vector<std::vector<char> >& board)
 	}
 }
 
+// For a word say "Ears", "Ears" is not considered a prefix
+// not sure if this matters but wanted to make the note
 std::pair<std::set<std::string>, std::set<std::string> > parseDict(std::string fname)
 {
 	std::ifstream dictfs(fname.c_str());
@@ -91,9 +93,51 @@ std::set<std::string> boggle(const std::set<std::string>& dict, const std::set<s
 	return result;
 }
 
-bool boggleHelper(const std::set<std::string>& dict, const std::set<std::string>& prefix, const std::vector<std::vector<char> >& board, 
-								   std::string word, std::set<std::string>& result, unsigned int r, unsigned int c, int dr, int dc)
+bool boggleHelper(
+	const std::set<std::string>& dict, 
+	const std::set<std::string>& prefix, 
+	const std::vector<std::vector<char> >& board, 
+	std::string word, 
+	std::set<std::string>& result, 
+	unsigned int r, unsigned int c, int dr, int dc
+)
 {
 //add your solution here!
 
+	// If word is not a prefix, check if it's in dict, insert, return true, otherwise return false
+	// COULD STILL BE A PREFIX FOR A BIGGER WORD BUT DUE TO SMALL SIZE OF BOARD BE THE LARGEST WORD
+	if(prefix.find(word) == prefix.end()){
+		if(dict.find(word) != dict.end()){
+			// Insert largest word
+			result.insert(word);
+			return true;
+		} else{
+			return false;
+		}
+	} else { //Word is a prefix, need to recurse if possible
+		if(r == board.size() || c == board.size()){ // recursed off end
+			// Check if it's in the dictionary because some words are prefixes but due to
+			// a small board would be skipped
+			if(dict.find(word) != dict.end()){
+				result.insert(word);
+				return true;
+			} else{
+				return false;
+			}
+		} else{
+			//Continued word
+			//If false then we went too far, let's see if this word is good
+			if(!boggleHelper(dict, prefix, board, word + board[r][c], result, r + dr, c + dc, dr, dc)){
+				if(dict.find(word) != dict.end()){
+					result.insert(word);
+					return true;
+				} else{
+					return false;
+				}
+			}
+
+		}
+
+	}
+	return true;
 }
